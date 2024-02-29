@@ -6,6 +6,8 @@ from colorama import init, Fore, Style
 from entrainement import *
 from recherche import *
 
+init(convert=True) #for Colorama
+
 def cls():
     os.system('cls' if os.name=='nt' else 'clear')
 
@@ -14,7 +16,10 @@ def prompt():
 i.e. produit scalaire: 0, least-squares: 1, city-block: 2""")
 
     arguments = input("\ntapez Q pour quitter.\n\n")
-    split_args = arguments.split(" ")
+    split_args = arguments.split()
+
+    word_to_search, nb_synonyms, method = split_args
+
     if(arguments == 'q'):
         cls()
         exit()
@@ -27,35 +32,43 @@ i.e. produit scalaire: 0, least-squares: 1, city-block: 2""")
         print(f"{Fore.RED}WRONG ARGUMENT TYPE: {Style.RESET_ALL}(str, int, int)")
         prompt()
     else:
-        coocurences(mot=split_args[0], nb_synonymes=split_args[1], methode_calcul=split_args[2])
+        coocurences(word_to_search, nb_synonyms, method)
 
 
 def coocurences(mot, nb_synonymes, methode_calcul):
-    print("\nCoocurences ICI")
-    #calculer 
+    research = Recherche()
 
-    #restart prompt quand fini
-    prompt()
+    print("\RESULTAT") 
+    #TODO: print_results( results, nb_synonyms)
+    
 
-def afficher_resultats():
+    prompt() #restart prompt quand fini 
+
+def print_results(results, nb_synonyms):
     #affichage des resultats
-    return 0
-    city_block = 0
+    print("\n")
+    i = 0
+    for result in results:
+        i += 1
+        #print(f"{}") 
+        if i == nb_synonyms:
+            break
 
-    return city_block
-
-def create_trainer():
-    pass
-
-
-if __name__ == "__main__":
+def main():
+    
+    
     TAILLE_FENETRE = int(argv[1])
     ENCODAGE = str(argv[2])
     CHEMIN = str(argv[3])
 
-    create_trainer(TAILLE_FENETRE, ENCODAGE, CHEMIN)
+    trainer = Entrainement(TAILLE_FENETRE, ENCODAGE, CHEMIN)
 
-    init(convert=True) #for Colorama
+    if trainer.train() == "done":
+        cls()
+        prompt()
+    else:
+        print(f"{Fore.RED}WRONG FILE PATH / TYPE{Style.RESET_ALL}")
 
-    cls()
-    prompt()
+
+if __name__ == "__main__":
+    quit(main())
