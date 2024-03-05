@@ -11,7 +11,7 @@ class Entrainement:
         self.unique_words = None
         self.coocurence_matrix = None
 
-    def train(self):
+    def train(self): 
         try:
             word_list = re.findall('\w+', open(self.path, 'r', encoding=self.encoding).read()) #ne prend pas les points (TODO peutetre a changer)
             word_list = [w.lower() for w in word_list]
@@ -37,7 +37,7 @@ class Entrainement:
         return unique_words
     
     def __fill_matrix(self, unique_words, word_list):
-        half_window = self.window // 2
+        half_window = self.window // 2 #prend half_window car symetrique
 
         for i in range(len(word_list)):
             central_word_index = unique_words[word_list[i]]

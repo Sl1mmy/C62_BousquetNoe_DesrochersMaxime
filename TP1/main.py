@@ -8,17 +8,19 @@ from recherche import *
 
 init(convert=True) #for Colorama
 
+
+
 def cls():
     os.system('cls' if os.name=='nt' else 'clear')
 
 def prompt():
+    split_args = None
+    
     print("""\nEntrez un mot, le nombre de synonymes que vous voulez et la methode de calcul,
 i.e. produit scalaire: 0, least-squares: 1, city-block: 2""")
 
     arguments = input("\ntapez Q pour quitter.\n\n")
     split_args = arguments.split()
-
-    word_to_search, nb_synonyms, method = split_args
 
     if(arguments == 'q'):
         cls()
@@ -32,31 +34,23 @@ i.e. produit scalaire: 0, least-squares: 1, city-block: 2""")
         print(f"{Fore.RED}WRONG ARGUMENT TYPE: {Style.RESET_ALL}(str, int, int)")
         prompt()
     else:
-        coocurences(word_to_search, nb_synonyms, method)
+        return split_args
 
 
-def coocurences(mot, nb_synonymes, methode_calcul):
-    research = Recherche()
-
-    print("\RESULTAT") 
-    #TODO: print_results( results, nb_synonyms)
-    
-
-    prompt() #restart prompt quand fini 
+def search(unique_words, matrix, search_word, nb_synonyms, method):
+    research = Recherche(unique_words, matrix, search_word, int(method))
+    print_results(research.search(), int(nb_synonyms))
 
 def print_results(results, nb_synonyms):
-    #affichage des resultats
     print("\n")
     i = 0
     for result in results:
         i += 1
-        #print(f"{}") 
-        if i == nb_synonyms:
+        print(f"{result[0]} --> {str(result[1])}") 
+        if i == nb_synonyms: #print jusqu'au nombre de mots max
             break
 
 def main():
-    
-    
     TAILLE_FENETRE = int(argv[1])
     ENCODAGE = str(argv[2])
     CHEMIN = str(argv[3])
@@ -65,7 +59,8 @@ def main():
 
     if trainer.train() == "done":
         cls()
-        prompt()
+        word_to_search, nb_synonyms, method = prompt()
+        search(trainer.unique_words, trainer.cooccurence_matrix, word_to_search, nb_synonyms, method)
     else:
         print(f"{Fore.RED}WRONG FILE PATH / TYPE{Style.RESET_ALL}")
 
