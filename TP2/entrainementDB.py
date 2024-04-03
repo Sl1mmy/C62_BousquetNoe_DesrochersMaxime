@@ -28,6 +28,8 @@ class Trainer:
         
         self.unique_words = self.__create_unique_list(word_list)
         self.__coocurences(self.unique_words, word_list)
+
+        print("\n ENTRAINEMENT TERMINÉ")
         return 0
 
     def __create_unique_list(self, word_list):

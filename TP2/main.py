@@ -101,8 +101,5 @@ def print_results(result_list, nb_synonym):
             break
 
 
-
-
-
 if __name__ == '__main__':
     quit(main())

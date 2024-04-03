@@ -70,18 +70,23 @@ class ConnexionDB():
         self.connexion.close()
 
     def create_tables(self):
-        self.cursor.execute(CREATE_WORD)
-        self.cursor.execute(CREATE_MATRIX)
-        self.cursor.execute(CREATE_FILES)
+        try:
+            self.cursor.execute(CREATE_WORD)
+            self.cursor.execute(CREATE_MATRIX)
+            self.cursor.execute(CREATE_FILES)
+        except:
+            print("ERREUR DE CREATION")
+            exit()
 
     def drop_tables(self):
         try:
-            self.cursor.execute(DROP_WORD)
             self.cursor.execute(DROP_MATRIX)
             self.cursor.execute(DROP_FILES)
+            self.cursor.execute(DROP_WORD)
             self.cursor.execute('VACUUM')
         except:
             print("ERREUR DE SUPPRESSION")
+            exit()
 
     # tuples_word : [(id, word), (id, word), ...]
     def insert_new_word(self, tuples_word):
