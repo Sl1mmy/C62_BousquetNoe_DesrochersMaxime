@@ -56,7 +56,7 @@ DROP_FILES = 'DROP TABLE IF EXISTS files'
 INSERT_FILE_DB = 'INSERT INTO files VALUES(?, ?)'
 
 
-class ConnexionDB():
+class ConnexionDB:
     def __init__(self):
         try:
             self.connexion = sqlite3.connect(DB_PATH)

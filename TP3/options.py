@@ -4,13 +4,12 @@ import argparse
 
 from entrainementDB import *
 from rechercheDB import *
-#from cluster import *
+from clustering import *
 from connexionDB import *
 
-class Options():
+class Options:
 
     def __init__(self) -> None:
-        self.window = self.enc = self.path = None
         self.parser = argparse.ArgumentParser()
         self.group = self.parser.add_mutually_exclusive_group()
 
@@ -101,7 +100,30 @@ class Options():
             exit()
 
     def clustering(self):
-        pass
+        self.parser.add_argument('-t',  dest='size',        action='store', type=int, required=True)
+        self.parser.add_argument('-n',  dest='n_centroids',    action='store', required=True)
+        self.parser.add_argument('-m',  dest='max_words',        action='store', required=True)
+
+        try:
+            self.parser.parse_args(self.option_args, namespace=self.args)
+        except:
+            print("\nERREUR - PAS ASSEZ DE PARAMETRES (TAILLE, NOMBRE CENTROIDES, MOTS MAX)")
+            exit()
+
+        try:
+            window = self.args.__getattribute__('size')
+            n_centroids = self.args.__getattribute__('n_centroids')
+            max_words = self.args.__getattribute__('max_words')
+        except:
+            print("\nERREUR - ARGUMENTS NON VALIDES (TAILLE: int, NOMBRE CENTROIDES: int, MOTS MAX: int)")
+            exit()
+
+        clustering = Clustering(window, n_centroids, max_words)
+        
+        result = clustering.run()
+        if result == 1:
+            exit()
+
 
     def regenerate_DB(self):
         random_args = argv[2:]
