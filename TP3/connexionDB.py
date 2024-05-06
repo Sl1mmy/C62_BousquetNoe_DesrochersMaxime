@@ -1,7 +1,7 @@
 import sqlite3
 import numpy as np
 
-DB_PATH = 'synonyms.db'
+DB_PATH = 'TP3/synonyms_db'
 ACTIVATE_FK = 'PRAGMA foreign_keys = 1'
 
 CREATE_WORD = '''

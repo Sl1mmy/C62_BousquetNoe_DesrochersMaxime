@@ -37,7 +37,7 @@ class Options:
         self.group.add_argument('-b', dest='action', action='store_const', const='regenerate_DB')
 
 
-        self.args, self.options_args = self.parser.parse_known_args()
+        self.args, self.option_args = self.parser.parse_known_args()
 
         if len(sys.argv) == 1:
             print("\nERREUR - PAS ASSEZ DE PARAMETRES")
@@ -95,31 +95,35 @@ class Options:
                 except:
                     print("\nINVALIDE")
                     exit()
-        except: 
+        except argparse.ArgumentError or argparse.ArgumentTypeError: 
             print("\nERREUR - TAILLE NON VALIDE (int)")
             exit()
 
     def clustering(self):
         self.parser.add_argument('-t',  dest='size',        action='store', type=int, required=True)
-        self.parser.add_argument('-n',  dest='n_centroids',    action='store', required=True)
-        self.parser.add_argument('-m',  dest='max_words',        action='store', required=True)
+        self.parser.add_argument('-n',  dest='n_centroids', action='store', required=True)
+        self.parser.add_argument('-k', dest='n_neighbors',    action='store', required=True)
+        self.parser.add_argument('-m',  dest='max_words',   action='store', required=True)
+        self.parser.add_argument('--normaliser', dest='normalize', action='store', required=False)
 
         try:
             self.parser.parse_args(self.option_args, namespace=self.args)
         except:
-            print("\nERREUR - PAS ASSEZ DE PARAMETRES (TAILLE, NOMBRE CENTROIDES, MOTS MAX)")
+            print("\nERREUR - PAS ASSEZ DE PARAMETRES (TAILLE, NOMBRE CENTROIDES, NOMBRE DE VOTES, MOTS MAX, NORMALISER)")
             exit()
 
         try:
             window = self.args.__getattribute__('size')
             n_centroids = self.args.__getattribute__('n_centroids')
+            n_neighbors = self.args.__getattribute__('n_neighbors')
             max_words = self.args.__getattribute__('max_words')
+            normalize = self.args.__getattribute__('normalize')
         except:
-            print("\nERREUR - ARGUMENTS NON VALIDES (TAILLE: int, NOMBRE CENTROIDES: int, MOTS MAX: int)")
+            print("\nERREUR - ARGUMENTS NON VALIDES (TAILLE: int, NOMBRE CENTROIDES: int, NOMBRE DE VOTES: int, MOTS MAX: int)")
             exit()
 
-        clustering = Clustering(window, n_centroids, max_words)
-        
+        clustering = Clustering(window, n_centroids, n_neighbors, max_words, normalize)
+        clustering.init()
         result = clustering.run()
         if result == 1:
             exit()

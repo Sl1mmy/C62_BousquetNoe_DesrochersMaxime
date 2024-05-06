@@ -35,7 +35,7 @@ class Recherche:
                 return sorted(self.basic_result, key=lambda x: x[1])
 
     def __get_stop_word(self):
-        self.stop_words = re.findall('\w+', open('stop_words.py', 'r', encoding="UTF-8").read())
+        self.stop_words = re.findall('\w+', open('TP3\stop_words.py', 'r', encoding="UTF-8").read())
 
 
     def __checkup(self):
