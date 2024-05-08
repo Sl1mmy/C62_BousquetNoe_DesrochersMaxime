@@ -3,6 +3,8 @@ import random
 from time import time
 from connexionDB import *
 
+import sys
+
 
 
 class Clustering:
@@ -12,24 +14,25 @@ class Clustering:
         self.n_centroids = int(n_centroids)
         self.max_words = int(max_words)
 
-        # KNN arguments ----------------------
-        self.features = ["nom", "adjectif", "determinant", "verbe", "pronom", "adverbe", "preposition", "conjonction", "interjection"]
-        #self.classes = # TODO figure out
-        #self.etiquettes = # TODO figure out
-
-        self.n_neighbors = int(n_neighbors)
-        self.is_normalized = normalize
-
-        # ------------------------------------
-
         self.connexion = ConnexionDB()
         self.word_dict = self.connexion.get_words()
         self.cooc_matrix = self.connexion.get_cooc_matrix(len(self.word_dict), int(window))
+
         self.centroids = []
         self.clusters_data = []
         self.n_iterations = 0
         self.n_changes = 0
         self.stable = False
+
+        # KNN arguments ----------------------
+        self.etiquettes, self.classes = self.get_tsv_content(self.word_dict.keys())
+        self.classes.append('MISC')
+        self.features = self.cooc_matrix
+
+        self.n_neighbors = int(n_neighbors)
+        self.is_normalized = normalize
+
+        # ------------------------------------
 
     def init(self):
         self.global_time = time()
@@ -43,6 +46,8 @@ class Clustering:
             self.centroids.append(self.cooc_matrix[indexCentroids[i]])
             self.clusters.append({})
             self.clusters_data.append([])
+
+        print(self.centroids)
 
         self.allocate_cluster(self.centroids, self.clusters)
 
@@ -64,11 +69,11 @@ class Clustering:
             self.print_iteration()
 
         print("done")
-        self.print_results()
-        # candidat: (list: [])
+        
         # type_vote: 0 (démocrate), 1 (harmonique), 2 (distance)
-        # votes = self.vote(candidat, self.n_votes, type_vote, self.is_normalized)
-        # print results
+        
+        #self.print_results()
+        self.print_results_knn()
 
     def iterate(self):
         self.n_changes = 0
@@ -123,7 +128,8 @@ class Clustering:
             self.clusters_data[i] = sorted(self.clusters_data[i], key= lambda x: x[1])
             for j in range(self.max_words):
                 if j < len(self.clusters_data[i]):
-                    print(f"{self.clusters_data[i][j][0]} --> {str(round(self.clusters_data[i][j][1]), 2)}")
+                    print(f"{self.clusters_data[i][j][0]} --> {str(round(self.clusters_data[i][j][1], 2))}")
+
 
     def dict_compare(self, d1, d2):
         d1_keys = set(d1.keys())
@@ -136,26 +142,75 @@ class Clustering:
 
     # - KNN -------------------------------------------------------------
 
+    def get_tsv_content(self, keys):
+        result = {}
+        with open("TP3\Lexique382.tsv", "r", encoding="utf-8") as f:
+            lines = f.read().splitlines()
+            for line in lines[1:]:
+                line = line.split('\t')
+                if line[0] in keys:
+                    result[line[0]] = line[3]
+
+            list_classes = list(set(result.values())) 
+
+        return result, list_classes
+
     # candidat: features d'un mot inconnu
-    def vote(self, candidat: list, n_voisins: int, type_vote: int, normalize: int) -> list[tuple[str, float]]:
-        self.features.append(candidat)
-        features = np.array(self.features)
-        self.features.pop()
-        if normalize:
-            features = self.normalize(features)
+    # def vote(self, candidat: list, n_voisins: int, type_vote: int, normalize: bool) -> list[tuple[str, float]]:
+    #     features = np.vstack([self.features, candidat])
         
-        # À l'étape nécessaire, le clustering fournit DÉJÀ
-        # les distances d'un mot à son cluster
-        distances = np.sum( (features[-1] - features[:-1])**2, axis = 1 )
-        voisins = np.argsort(distances)[:n_voisins]
-        fonction_vote = [self.__democrate, self.__harmonique, self.__distance][type_vote]
-        votes = {classe:0 for classe in self.classes}
-        for position_voisin in range(len(voisins)):
-            rangee_voisin = voisins[position_voisin]
-            distance_voisin = distances[rangee_voisin]
-            etiquette_voisin = self.etiquettes[rangee_voisin]
-            votes[etiquette_voisin] += fonction_vote(distance_voisin, position_voisin)
+    #     if normalize:
+    #         features = self.normalize(features)
+        
+    #     # À l'étape nécessaire, le clustering fournit DÉJÀ
+    #     # les distances d'un mot à son cluster
+    #     distances = np.sum( (features[-1] - features[:-1])**2, axis = 1 )
+
+    #     voisins = np.argsort(distances)[:n_voisins]
+    #     fonction_vote = [self.__democrate, self.__harmonique, self.__distance][type_vote]
+    #     votes = {classe:0 for classe in self.classes}
+    #     for position_voisin in range(len(voisins)):
+    #         rangee_voisin = voisins[position_voisin]
+    #         distance_voisin = distances[rangee_voisin]
+    #         etiquette_voisin = self.etiquettes[rangee_voisin]
+    #         votes[etiquette_voisin] += fonction_vote(distance_voisin, position_voisin)
+    #     return sorted(votes.items(), key=lambda t:t[1], reverse=True)
+    
+
+    def vote(self, voisins:list, nb_voisins: int) -> list[tuple[str, float]]:
+        voisins = voisins[:nb_voisins]
+        votes = {classe:0 for classe in self.classes} #{'VRB', 0}
+        
+        for mot, distance in voisins:
+            if mot not in self.etiquettes:
+                etiquette_voisin = 'MISC'
+            else:
+                etiquette_voisin = self.etiquettes[mot]
+            votes[etiquette_voisin] += 1 / (distance+1)
         return sorted(votes.items(), key=lambda t:t[1], reverse=True)
+
+
+    
+    def print_results_knn(self):
+        print("\n****************************************************************************")
+        print(f'\n\nClustering en {self.n_iterations} itérations. Temps écoulés : {round((time() - self.global_time), 2)} secondes\n')
+        for i in range(len(self.clusters_data)):
+            
+            self.clusters_data[i] = sorted(self.clusters_data[i], key= lambda x: x[1])
+
+            votes = self.vote(self.clusters_data[i], self.n_neighbors)
+
+            if self.is_normalized:
+                pass # normalize here
+
+
+            print(f'\nCentroide {i} --- {votes} \n') # votes_centroid
+            
+            for j in range(self.max_words):
+                if j < len(self.clusters_data[i]):
+                    
+                    
+                    print(f"{self.clusters_data[i][j][0]} --> {str(round(self.clusters_data[i][j][1], 2))} --- [cGram]") # {self.knn_results[0][0]}
         
     # chaque vecteur de feature (coordonnée) est transformé
     # en vecteur unitaire, donc divisé par sa norme

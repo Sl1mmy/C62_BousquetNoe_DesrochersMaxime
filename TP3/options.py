@@ -104,7 +104,7 @@ class Options:
         self.parser.add_argument('-n',  dest='n_centroids', action='store', required=True)
         self.parser.add_argument('-k', dest='n_neighbors',    action='store', required=True)
         self.parser.add_argument('-m',  dest='max_words',   action='store', required=True)
-        self.parser.add_argument('--normaliser', dest='normalize', action='store', required=False)
+        self.parser.add_argument('--norm', '--normaliser', dest='normalize', action='store_true', required=False)
 
         try:
             self.parser.parse_args(self.option_args, namespace=self.args)
