@@ -3,7 +3,7 @@ import random
 from time import time
 from connexionDB import *
 
-import sys
+from collections import defaultdict
 
 
 
@@ -25,7 +25,7 @@ class Clustering:
         self.stable = False
 
         # KNN arguments ----------------------
-        self.etiquettes, self.classes = self.get_tsv_content(self.word_dict.keys())
+        self.tag, self.classes = self.get_tsv_content(self.word_dict.keys())
         self.classes.append('MISC')
         self.features = self.cooc_matrix
 
@@ -46,8 +46,6 @@ class Clustering:
             self.centroids.append(self.cooc_matrix[indexCentroids[i]])
             self.clusters.append({})
             self.clusters_data.append([])
-
-        print(self.centroids)
 
         self.allocate_cluster(self.centroids, self.clusters)
 
@@ -155,42 +153,38 @@ class Clustering:
 
         return result, list_classes
 
-    # candidat: features d'un mot inconnu
-    # def vote(self, candidat: list, n_voisins: int, type_vote: int, normalize: bool) -> list[tuple[str, float]]:
-    #     features = np.vstack([self.features, candidat])
-        
-    #     if normalize:
-    #         features = self.normalize(features)
-        
-    #     # À l'étape nécessaire, le clustering fournit DÉJÀ
-    #     # les distances d'un mot à son cluster
-    #     distances = np.sum( (features[-1] - features[:-1])**2, axis = 1 )
 
-    #     voisins = np.argsort(distances)[:n_voisins]
-    #     fonction_vote = [self.__democrate, self.__harmonique, self.__distance][type_vote]
+    # def vote(self, neighbors:list, n_neighbors: int) -> list[tuple[str, float]]:
+    #     neighbors = neighbors[:n_neighbors]
     #     votes = {classe:0 for classe in self.classes}
-    #     for position_voisin in range(len(voisins)):
-    #         rangee_voisin = voisins[position_voisin]
-    #         distance_voisin = distances[rangee_voisin]
-    #         etiquette_voisin = self.etiquettes[rangee_voisin]
-    #         votes[etiquette_voisin] += fonction_vote(distance_voisin, position_voisin)
+        
+    #     for word, distance in neighbors:
+    #         if word not in self.tag:
+    #             neighbor_tag = 'MISC'
+    #         else:
+    #             neighbor_tag = self.tag[word]
+    #         votes[neighbor_tag] += 1.0 / (distance + 1)
+        
     #     return sorted(votes.items(), key=lambda t:t[1], reverse=True)
     
 
-    def vote(self, voisins:list, nb_voisins: int) -> list[tuple[str, float]]:
-        voisins = voisins[:nb_voisins]
-        votes = {classe:0 for classe in self.classes} #{'VRB', 0}
+    def vote(self, neighbors:list, n_neighbors: int) -> list[tuple[str, float]]:
+        neighbors = neighbors[:n_neighbors]
+        votes = {classe:0 for classe in self.classes}
+        votes_individual = defaultdict(lambda: defaultdict(float))
         
-        for mot, distance in voisins:
-            if mot not in self.etiquettes:
-                etiquette_voisin = 'MISC'
+        for word, distance in neighbors:
+            if word not in self.tag:
+                neighbor_tag = 'MISC'
             else:
-                etiquette_voisin = self.etiquettes[mot]
-            votes[etiquette_voisin] += 1 / (distance+1)
-        return sorted(votes.items(), key=lambda t:t[1], reverse=True)
+                neighbor_tag = self.tag[word]
+            votes[neighbor_tag] += 1.0 / (distance + 1)
+            votes_individual[word][neighbor_tag] += 1.0 / (distance + 1)
+        
+        votes = sorted(votes.items(), key=lambda t:t[1], reverse=True)
+        return votes, dict(votes_individual)
 
 
-    
     def print_results_knn(self):
         print("\n****************************************************************************")
         print(f'\n\nClustering en {self.n_iterations} itérations. Temps écoulés : {round((time() - self.global_time), 2)} secondes\n')
@@ -198,24 +192,35 @@ class Clustering:
             
             self.clusters_data[i] = sorted(self.clusters_data[i], key= lambda x: x[1])
 
-            votes = self.vote(self.clusters_data[i], self.n_neighbors)
+            votes, votes_individual = self.vote(self.clusters_data[i], self.n_neighbors)
 
             if self.is_normalized:
-                pass # normalize here
-
+                votes, votes_individual = self.normalize(votes, votes_individual)
 
             print(f'\nCentroide {i} --- {votes} \n') # votes_centroid
             
             for j in range(self.max_words):
                 if j < len(self.clusters_data[i]):
                     
-                    
-                    print(f"{self.clusters_data[i][j][0]} --> {str(round(self.clusters_data[i][j][1], 2))} --- [cGram]") # {self.knn_results[0][0]}
+                    print(f"{self.clusters_data[i][j][0]} --> {str(round(self.clusters_data[i][j][1], 2))} --- [cGrams]") # {self.knn_results[0][0]}
+
+            # for word, class_votes in votes_individual.items():
+            #     for class_, value in class_votes.items():
+            #         print(f"'{word}' --> {value} --- '{class_}'")
         
-    # chaque vecteur de feature (coordonnée) est transformé
-    # en vecteur unitaire, donc divisé par sa norme
-    def normalize(self, m: np.ndarray) -> np.ndarray:
-        return (m.transpose()/np.linalg.norm(m, axis=1)).transpose()
+
+    def normalize(self, votes, votes_individual):
+        total = sum(value for _, value in votes)
+        normalized_votes = [(label, value / total) if total != 0 else (label, 0) for label, value in votes]
+
+        normalized_individual_votes = {}
+        for word, class_votes in votes_individual.items():
+            total = sum(class_votes.values())
+            normalized_class_votes = {classe: value / total for classe, value in class_votes.items()} if total != 0 else {classe: 0 for classe in class_votes}
+            normalized_individual_votes[word] = normalized_class_votes
+        
+        return normalized_votes, normalized_individual_votes
+
     
     def __democrate(self, distance2: float, position: int) -> float: return 1.0
     def __harmonique(self, distance2: float, position: int) -> float: return 1.0/(position + 1)
