@@ -31,7 +31,7 @@ Voici les options utilisés pour le Clustering et KNN, les valeurs `<valeur : da
  - `-m <nombre : int>` : nombre maximal de mots à afficher par cluster
  - `--normaliser / --norm` : normalise les valeurs du KNN
 
-> Exemple : `H:\GITHUB\C62_BousquetNoe_DesrochersMaxime\TP2>main.py -c -t 5 -n 5 -k 5 -m 10 --normaliser`
+> Exemple : `H:\GITHUB\C62_BousquetNoe_DesrochersMaxime\TP2>main.py -c -t 5 -n 10 -k 5 -m 10 --normaliser`
 
 **Regénération** :
 Il n'y a pas d'options supplémentaires pour la regénération de la BD.

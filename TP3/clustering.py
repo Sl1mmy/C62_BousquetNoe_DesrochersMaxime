@@ -199,14 +199,14 @@ class Clustering:
 
             print(f'\nCentroide {i} --- {votes} \n') # votes_centroid
             
-            for j in range(self.max_words):
-                if j < len(self.clusters_data[i]):
-                    
-                    print(f"{self.clusters_data[i][j][0]} --> {str(round(self.clusters_data[i][j][1], 2))} --- [cGrams]") # {self.knn_results[0][0]}
+            for word, class_votes in votes_individual.items():
+                for class_, value in class_votes.items():
+                    print(f"'{word}' --> {value} --- '{class_}'")
 
-            # for word, class_votes in votes_individual.items():
-            #     for class_, value in class_votes.items():
-            #         print(f"'{word}' --> {value} --- '{class_}'")
+            
+            for j in range(self.max_words):
+                if j >= self.n_neighbors and j < len(self.clusters_data[i]):
+                    print(f"{self.clusters_data[i][j][0]} --> {str(round(self.clusters_data[i][j][1], 2))} --- [cGrams]")
         
 
     def normalize(self, votes, votes_individual):

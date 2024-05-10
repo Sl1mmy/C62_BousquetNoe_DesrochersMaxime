@@ -1,0 +1,21 @@
+Analyse du temps par centroides (temps total (secondes)| temps par iterations (secondes)): 
+    -5 centroides:      292.04   | 7.75
+    -10 centroides:     756.69   | 12.85
+    -20 centroides:     2374.95  | 23.80
+    -100 centroides:    25860.95 | 116.50
+
+Analyse des itérations par centroides:
+    -5 centroides:      37
+    -10 centroides:     58
+    -20 centroides:     100
+    -100 centroides:    227
+
+Analyse des résulats:
+    le plus de centroides, plus les mots sont catégorisés, par exemple:
+    -20 centroides: centroide 16 a seulement 3 mots: don, quichotte, artagnan
+
+    trops de centroides peuvent porter a une sur-catégorisation:
+    -100 centroides: centroide 6 a seulement 1 mot: quichotte
+    un peu inutile
+
+La classification des mots à l'aide du KNN se fait très bien avec les centroides, il n'y a presque pas d'erreurs.
