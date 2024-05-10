@@ -1,3 +1,4 @@
+
 # TP2 : Synonyme BD
  
 Fichier de configuration pour le TP2 du cours 62 - Donnés, Mégadonnés et Intelligence Artificielle 2.
@@ -21,6 +22,16 @@ Voici les options utilisés pour la recherche, les valeurs `<valeur : datatype>`
  - `-t <taille : int>` : taille de fenêtre
 
 > Exemple : `H:\GITHUB\C62_BousquetNoe_DesrochersMaxime\TP2>main.py -r -t 5`
+
+**Clustering** :
+Voici les options utilisés pour le Clustering et KNN, les valeurs `<valeur : datatype>` doivent suivre l'option, précédé d'un espace, ces options sont obligatoires :
+ - `-t <taille : int>` : taille de fenêtre
+ - `-n <nombre : int>` : nombre de centroïdes
+ - `-k <nombre : int>` : nombre de voisins
+ - `-m <nombre : int>` : nombre maximal de mots à afficher par cluster
+ - `--normaliser / --norm` : normalise les valeurs du KNN
+
+> Exemple : `H:\GITHUB\C62_BousquetNoe_DesrochersMaxime\TP2>main.py -c -t 5 -n 5 -k 5 -m 10 --normaliser`
 
 **Regénération** :
 Il n'y a pas d'options supplémentaires pour la regénération de la BD.
