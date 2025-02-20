@@ -1,7 +1,7 @@
 
-# TP2 : Synonyme BD
+# TP3 : Synonyme BD
  
-Fichier de configuration pour le TP2 du cours 62 - Donnés, Mégadonnés et Intelligence Artificielle 2.
+Fichier de configuration pour le TP3 du cours 62 - Donnés, Mégadonnés et Intelligence Artificielle 2.
 
 ## Options de lancement
 Chaque options peuvent être fournies dans n'importe quel ordre, elles sont séparés pour 3 opérations distinctes:
